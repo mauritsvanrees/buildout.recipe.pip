@@ -4,6 +4,7 @@
 *.pyo
 .installed.cfg
 .mr.developer.cfg
+.Python
 bin
 build
 develop-eggs
@@ -14,4 +15,5 @@ include
 lib
 local.cfg
 parts
+pip-selfcheck.json
 var
