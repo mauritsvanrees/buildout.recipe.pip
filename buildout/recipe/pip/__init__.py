@@ -2,8 +2,13 @@
 """Recipe pip"""
 from subprocess import call
 
+import logging
 import os
+import tempfile
 import virtualenv
+
+
+logger = logging.getLogger('buildout.recipe.pip')
 
 
 class Recipe(object):
@@ -21,9 +26,43 @@ class Recipe(object):
         packages = self.options.get('packages', self.options.get('eggs'), '').split()
         if not packages:
             return tuple()
-        pip_command = [pip_script, 'install']
-        pip_command.extend(packages)
-        call(pip_command)
+
+        pip_args = [
+            # Command:
+            'install',
+            # Compile py files to pyc.
+            '--compile',
+            '--no-binary', 'zc.recipe.egg',  # Maybe use canonicalize_name.
+            '--disable-pip-version-check',
+        ]
+        # Get the version constraints.
+        versions = self.buildout.versions
+        with tempfile.NamedTemporaryFile() as constraints_file:
+            # Get version constraints.
+            if versions is not None:
+                for name, version in versions.items():
+                    if 'dev' in version:
+                        # Could not find a version that satisfies the requirement
+                        # zc.buildout==>=2.6.0.dev0
+                        logger.warn('Ignoring dev constraint %s = %s',
+                                    name, version)
+                        continue
+                    # Collecting zc.recipe.egg==>=2.0.0a3 fails for me, even
+                    # when it is already installed as dev version.  Pip says it
+                    # can't find it in a list that does actually contain it...
+                    if '>=' in version:
+                        logger.warn('Ignoring ">=" constraint %s = %s',
+                                    name, version)
+                        continue
+                    constraints_file.write('{0}=={1}\n'.format(name, version))
+            constraints_file.seek(0)
+            # Constrain versions using the given constraints file.
+            pip_args.extend(['--constraint', constraints_file.name])
+
+            pip_args.extend(packages)
+            pip_command = [pip_script]
+            pip_command.extend(pip_args)
+            call(pip_command)
 
         # Return files that were created by the recipe. The buildout
         # will remove all returned files upon reinstall.
@@ -31,4 +70,5 @@ class Recipe(object):
 
     def update(self):
         """Updater"""
-        pass
+        # For now do the same as on install.
+        return self.install()
