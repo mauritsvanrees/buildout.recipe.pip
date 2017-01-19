@@ -6,23 +6,31 @@ import logging
 import os
 import tempfile
 import virtualenv
-
+import zc.buildout
 
 logger = logging.getLogger('buildout.recipe.pip')
 
 
 class Recipe(object):
-    """zc.buildout recipe"""
+    """zc.buildout recipe for creating a virtualenv and installing with pip."""
 
     def __init__(self, buildout, name, options):
         self.buildout, self.name, self.options = buildout, name, options
-
-    def install(self):
-        """Installer"""
         env_dir = os.path.join(self.buildout['buildout']['parts-directory'], self.name)
         if not os.path.exists(env_dir):
             virtualenv.create_environment(env_dir)
-        pip_script = os.path.join(env_dir, 'bin', 'pip')
+        # Find lib/python2.7/site-packages.  Or for Python 3 or PyPy.
+        path = os.path.join(env_dir, 'lib')
+        path = os.path.join(path, os.listdir(path)[0], 'site-packages')
+        if not os.path.isdir(path):
+            raise zc.buildout.UserError(
+                'virtualenv path {} not found'.format(path))
+        self.options['env_dir'] = env_dir
+        self.options['path'] = path
+
+    def install(self):
+        """Installer"""
+        pip_script = os.path.join(self.options['env_dir'], 'bin', 'pip')
         packages = self.options.get('packages', self.options.get('eggs'), '').split()
         if not packages:
             return tuple()
