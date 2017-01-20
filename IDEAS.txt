@@ -1,0 +1,69 @@
+Recipe for installing packages in a virtualenv
+- existing candidates are rubbish or currently broken.  gp.recipe.pip is closest.
+
+Possible names:
+- collective.recipe.pip.  No: already taken
+- collective.recipe.virtualenv
+- zest.recipe.pip
+- vanrees.recipe.pip
+- vr.recipe.pip
+- buildout.recipe.pip
+
+
+[buildout]
+parts = test
+virtualenv = virtualenv
+
+[virtualenv/pip]
+# no-recipe part, just definitions for all our parts
+python = python-interpreter
+virtualenv-executable = probably not
+extra-options =
+pip-options =
+
+[test]
+# Create virtualenv in parts/<part name>.
+recipe = buildout.recipe.pip
+# eggs =
+# packages =
+requirements =
+    zest.releaser
+requirements_file = requirements.txt
+
+# Part that contains version constraints.  Defaults to versions.
+constraints = versions
+
+# show pip freeze:
+show-picked-versions = true
+
+# pip may not support this, but we can quit with an error if there are
+# picked versions.
+allow-picked-versions = true
+
+# Upgrade dependencies.  Only useful when not everything is pinned.
+# Use ${buildout:newest} as default value, which is false.
+upgrade = false
+
+# Extra options to pass to pip.
+# Maybe read ${buildout:pip-options} by default.
+pip-options = ...
+
+# Symlink these scripts in ${buildout:bin-directory}.
+# empty: no scripts
+# not specified: all scripts
+scripts = fullrelease
+# maybe all_scripts = true / false
+# except python, python2.7, pip, etc.
+
+# Link parts/test/python in bin under this name,
+# or create a script with the same effect:
+interpreter = testpython
+
+[problematicpackage]
+recipe = buildout.recipe.pip
+packages =
+    hard.to.install.package
+flags = --CFLAGS=whatever-needed-to-install-it
+# Install the package in this virtualenv:
+virtualenv = ${test:directory}
+# virtualenv = ${test:virtualenv}

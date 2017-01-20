@@ -16,4 +16,5 @@ lib
 local.cfg
 parts
 pip-selfcheck.json
+testrequest.py
 var
