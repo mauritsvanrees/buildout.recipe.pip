@@ -20,8 +20,12 @@ class Recipe(object):
         if not os.path.exists(env_dir):
             virtualenv.create_environment(env_dir)
         # Find lib/python2.7/site-packages.  Or for Python 3 or PyPy.
+        # I read somewhere that on Windows it is lib/site-packages.
         path = os.path.join(env_dir, 'lib')
-        path = os.path.join(path, os.listdir(path)[0], 'site-packages')
+        if 'site-packages' in os.listdir(path):
+            path = os.path.join(path, 'site-packages')
+        else:
+            path = os.path.join(path, os.listdir(path)[0], 'site-packages')
         if not os.path.isdir(path):
             raise zc.buildout.UserError(
                 'virtualenv path {} not found'.format(path))
