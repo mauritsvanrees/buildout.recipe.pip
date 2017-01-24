@@ -12,6 +12,7 @@ dist
 downloads
 eggs
 include
+instance
 lib
 local.cfg
 parts

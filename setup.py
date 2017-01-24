@@ -54,6 +54,7 @@ setup(
     include_package_data=True,
     zip_safe=False,
     install_requires=[
+        'distlib',
         'setuptools',
         'zc.buildout',
         'virtualenv',
@@ -63,6 +64,9 @@ setup(
     extras_require=dict(tests=tests_require),
     test_suite='buildout.recipe.pip.tests.test_docs.test_suite',
     entry_points={
-        'zc.buildout': ['default = buildout.recipe.pip:Recipe'],
+        'zc.buildout': [
+            'default = buildout.recipe.pip:Recipe',
+            'scripts = buildout.recipe.pip:Scripts',
+        ],
     },
 )

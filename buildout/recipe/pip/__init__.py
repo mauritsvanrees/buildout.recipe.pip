@@ -84,3 +84,50 @@ class Recipe(object):
         """Updater"""
         # For now do the same as on install.
         return self.install()
+
+
+class Scripts(object):
+    """zc.buildout recipe for creating scripts.
+
+    This uses distlib.scripts.ScriptMaker.
+
+    Current goal: turn the ./bin/instance script in a working
+    ./instance script.
+
+    We have a bin/instance script that has been created with
+    plone.recipe.zope2instance, which is based on zc.recipe.egg.  The
+    way we use it in our test buildout.cfg results in a script that only
+    has the Zope2 egg plus dependencies, and uses the python with which
+    buildout was run.  You can start it with 'bin/instance fg' and
+    create a plain Zope site.
+
+    The Scripts class replaces the shebang line with one that has a
+    shebang line for the Python from the virtualenv/pip part.
+
+    In the end we probably want to replace plone.recipe.zope2instance
+    with a recipe that is not based on zc.recipe.egg.
+    """
+
+    def __init__(self, buildout, name, options):
+        self.buildout, self.name, self.options = buildout, name, options
+
+    def install(self):
+        # XXX We would like to use the distlib package that is in the
+        # virtualenv, as that would make things much easier, for example
+        # finding the right executable for a shebang line.
+        from distlib.scripts import ScriptMaker
+        bin_dir = self.buildout['buildout']['bin-directory']
+        buildout_dir = self.buildout['buildout']['directory']
+        maker = ScriptMaker(bin_dir, buildout_dir)  # source dir, target dir
+
+        # Set the Python executable for the script.
+        executable = os.path.join(self.options['env-dir'], 'bin', 'python')
+        maker.executable = executable
+
+        # Allow to overwrite previous scripts.
+        maker.clobber = True
+
+        # Make a copy of the script.
+        maker.make('instance')
+
+        return ('instance',)
