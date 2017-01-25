@@ -80,7 +80,7 @@ Then run buildout::
 
 Buildout will install the ``buildout.recipe.pip`` Python package.
 This recipe creates a virtualenv in the directory ``parts/packages``.
-The ``packages`` name comes from the part or section name that is within sqaure brackets.
+The ``packages`` name comes from the part or section name that is within square brackets.
 Then it uses the ``pip`` from the new virtualenv to install the ``requests`` package.
 
 You may be frowning now.
