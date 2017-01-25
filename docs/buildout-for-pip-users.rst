@@ -96,7 +96,7 @@ By separating them, you can create multiple environments that coexist happily ne
 - a virtualenv with Django plus a similar add-on that you want to compare
 - a virtualenv with Sphinx to build your documentation
 
-It may not even be possible to put all this in a single virtualenv, if your add-on requires newer versions that the other add-on conflicts with.
+It may not even be possible to put all this in a single virtualenv, if your add-on and the other add-on have conflicting configurations.
 Or your add-on starts depending on a utility function from Sphinx and you don't notice that you didn't add Sphinx to the ``install_requires`` in your ``setup.py``.
 
 Okay, you say, but it would be nice to have a Python prompt with the installed packages without needing to do ``parts/packages/bin/python``.
@@ -147,7 +147,7 @@ The ``versions`` section is used to constrain the versions.
 The recipe creates a temporary file based on this section, and passes this to ``pip install --constraint <file>``.
 
 The nice thing about a constraints file, is that it can be a known good set: a long list of packages that work well together.
-The recipe does not install all packages in this list, but only that packages that are required.
+The recipe does not install all packages in this list, but only the packages that are required.
 For example, this versions section would have the same effect::
 
     [versions]
