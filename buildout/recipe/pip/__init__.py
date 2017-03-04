@@ -18,6 +18,7 @@ class Recipe(object):
         self.buildout, self.name, self.options = buildout, name, options
         env_dir = os.path.join(self.buildout['buildout']['parts-directory'], self.name)
         if not os.path.exists(env_dir):
+            # TODO It is bad form to create files or directories in the init.
             virtualenv.create_environment(env_dir)
         # Find lib/python2.7/site-packages.  Or for Python 3 or PyPy.
         # I read somewhere that on Windows it is lib/site-packages.
