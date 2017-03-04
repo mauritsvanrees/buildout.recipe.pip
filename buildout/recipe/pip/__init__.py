@@ -34,10 +34,13 @@ class Recipe(object):
 
     def install(self):
         """Installer"""
+        self.options['env_dir'] = env_dir
+        self.options.created(env_dir)
+
         pip_script = os.path.join(self.options['env_dir'], 'bin', 'pip')
         packages = self.options.get('packages', self.options.get('eggs'), '').split()
         if not packages:
-            return tuple()
+            return self.options.created()
 
         pip_args = [
             # Command:
@@ -78,7 +81,7 @@ class Recipe(object):
 
         # Return files that were created by the recipe. The buildout
         # will remove all returned files upon reinstall.
-        return tuple()
+        return self.options.created()
 
     def update(self):
         """Updater"""
