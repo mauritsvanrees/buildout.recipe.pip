@@ -35,8 +35,7 @@ class Recipe(object):
 
     def install(self):
         """Installer"""
-        self.options['env_dir'] = env_dir
-        self.options.created(env_dir)
+        self.options.created(self.options['env_dir'])
 
         pip_script = os.path.join(self.options['env_dir'], 'bin', 'pip')
         packages = self.options.get('packages', self.options.get('eggs'), '').split()
