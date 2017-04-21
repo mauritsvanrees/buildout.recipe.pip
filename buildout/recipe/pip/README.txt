@@ -3,6 +3,7 @@ We'll start by creating a buildout that uses the recipe::
     >>> write('buildout.cfg',
     ... """
     ... [buildout]
+    ... index = https://pypi.python.org/simple
     ... parts = test1
     ...
     ... [test1]
@@ -13,7 +14,7 @@ We'll start by creating a buildout that uses the recipe::
 Running the buildout gives us::
 
     >>> print 'start', system(buildout)
-    start Installing test1.
+    start...Installing test1.
     ...
     Collecting requests
       Downloading requests...whl...
