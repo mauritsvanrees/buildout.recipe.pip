@@ -4,6 +4,7 @@ from subprocess import call
 
 import logging
 import os
+import shutil
 import tempfile
 import virtualenv
 import zc.buildout
@@ -16,10 +17,26 @@ class Recipe(object):
 
     def __init__(self, buildout, name, options):
         self.buildout, self.name, self.options = buildout, name, options
-        env_dir = os.path.join(self.buildout['buildout']['parts-directory'], self.name)
-        if not os.path.exists(env_dir):
-            # TODO It is bad form to create files or directories in the init.
+        self.options['env_dir'] = os.path.join(
+            self.buildout['buildout']['parts-directory'], self.name)
+
+    def install(self, clear=True):
+        """Installer
+
+        When clear is True, we remove the virtualenv, if it exists.
+        This makes sure no packages linger there that are no longer wanted.
+        """
+        env_dir = self.options['env_dir']
+        # TODO: Windows will have a different script name.
+        pip_script = os.path.join(env_dir, 'bin', 'pip')
+        if clear and os.path.exists(env_dir):
+            shutil.rmtree(env_dir)
+        if not os.path.exists(pip_script):
+            # Note: it is bad form to create files or directories in the init.
+            # And actually, it can lead to problems, as the directory may
+            # get removed before the install.
             virtualenv.create_environment(env_dir)
+        self.options.created(env_dir)
         # Find lib/python2.7/site-packages.  Or for Python 3 or PyPy.
         # I read somewhere that on Windows it is lib/site-packages.
         path = os.path.join(env_dir, 'lib')
@@ -30,14 +47,9 @@ class Recipe(object):
         if not os.path.isdir(path):
             raise zc.buildout.UserError(
                 'virtualenv path {} not found'.format(path))
-        self.options['env_dir'] = env_dir
+        # TODO: it is probably only useful to set options in the init method.
         self.options['path'] = path
 
-    def install(self):
-        """Installer"""
-        self.options.created(self.options['env_dir'])
-
-        pip_script = os.path.join(self.options['env_dir'], 'bin', 'pip')
         packages = self.options.get('packages', self.options.get('eggs'), '').split()
         if not packages:
             return self.options.created()
@@ -52,13 +64,14 @@ class Recipe(object):
         ]
         # Get the version constraints.
         versions = self.buildout.versions
-        with tempfile.NamedTemporaryFile() as constraints_file:
+        with tempfile.NamedTemporaryFile(
+                prefix='constraints_') as constraints_file:
             # Get version constraints.
             if versions is not None:
                 for name, version in versions.items():
                     if 'dev' in version:
-                        # Could not find a version that satisfies the requirement
-                        # zc.buildout==>=2.6.0.dev0
+                        # Could not find a version that satisfies the
+                        # requirement zc.buildout==>=2.6.0.dev0
                         logger.warn('Ignoring dev constraint %s = %s',
                                     name, version)
                         continue
@@ -85,8 +98,8 @@ class Recipe(object):
 
     def update(self):
         """Updater"""
-        # For now do the same as on install.
-        return self.install()
+        # For now do the same as on install, except do not clear.
+        return self.install(clear=False)
 
 
 class Scripts(object):
