@@ -25,6 +25,11 @@ class Recipe(object):
 
         When clear is True, we remove the virtualenv, if it exists.
         This makes sure no packages linger there that are no longer wanted.
+
+        Note that during development of this package, zc.buildout
+        automatically generates a new unique buildout signature
+        for any part that uses this recipe.  So the develop method
+        is never called, but only the install method.
         """
         env_dir = self.options['env_dir']
         # TODO: Windows will have a different script name.
